@@ -1,0 +1,3 @@
+[submodule "instance"]
+	path = instance
+	url = ssh://52d7442f5973ca823b00007d@server1-ideasystems.rhcloud.com/~/git/server1.git/
