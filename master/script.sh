@@ -5,7 +5,7 @@ OPTIONS="Deploy Run"
 
 # run (uri, parameters) 
 function run {
-	URI=$1
+	URI=$1"?method=run"
 	params=$2
 	if [ -z "$params" ]; then 
 		echo Running $URI
@@ -23,6 +23,18 @@ function deploy {
 	URL = $2"?method=deploy"
 	echo "deploy script"
 	curl -T $file_name $URL	
+}
+
+#status URI
+function status {
+	URI=$1"?method=status"
+	if [ -z "$URI" ]; then 
+		echo Enter host name
+		exit
+	else
+		response=$(curl -s $URI 2>&1);
+		#echo $response
+	fi
 }
 
 function init {
