@@ -19,7 +19,10 @@ function run {
 
 
 function deploy {
-	echo "deploy script"	
+	file_name =$1
+	URL = $2"?method=deploy"
+	echo "deploy script"
+	curl -T $file_name $URL	
 }
 
 function init {
