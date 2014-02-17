@@ -1,12 +1,5 @@
 #!/bin/bash
-OPTIONS="Deploy Run"
-openShiftGitRepo="git://github.com/isururanawaka/Openshift.git"
-herokuGitRepo="git://github.com/heroku/ruby-sample.git"
-herokuAppFolder="ruby-sample"
-openShiftNewAppURL=""
-OpenShiftNewAppGitRepo=""
-herokuNewAppURL=""
-herokuNewGitRepo=""
+source config.cfg
 
 # run (uri, parameters) 
 function run {
@@ -131,7 +124,51 @@ function status {
 		exit
 	else
 		response=$(curl -s $URI 2>&1);
-		echo $response
+		
+		readarray -t y <<<"$response"
+		
+		cpu=${y[2]}
+		mem=${y[3]}
+					
+		IFS=':' read -a mem_arr <<< "$mem"
+		IFS=':' read -a cpu_arr <<< "$cpu"
+
+		cpu_temp=${cpu_arr[1]}
+		mem_temp=${mem_arr[1]}
+		
+		IFS=',' read -a mem_vals <<< "$mem_temp"
+		IFS=',' read -a cpu_vals <<< "$cpu_temp"
+		
+		for (( i = 0; i < ${#mem_vals[@]}; i++ ));
+		do
+			IFS=' ' read -a temp <<< "${mem_vals[$i]}"
+			mem_final[$i]=${temp[0]}
+		done
+		
+		mem_total=${mem_final[0]}
+		mem_used=${mem_final[1]}
+		mem_free=${mem_final[2]}
+		
+		echo Total memory : $mem_total
+		echo Memory used : $mem_used
+		echo Free memory : $mem_free
+		
+		for (( i = 0; i < ${#cpu_vals[@]}; i++ ));
+		do
+			IFS='%' read -a temp <<< "${cpu_vals[$i]}"
+			cpu_final[$i]=${temp[0]}
+		done
+	
+		cpu_user=${cpu_final[0]}		
+		cpu_system=${cpu_final[1]}
+		cpu_nice=${cpu_final[2]}
+		cpu_io_wait=${cpu_final[4]}
+		
+		echo CPU user : $cpu_user
+		echo CPU system : $cpu_system
+		echo CPU nice : $cpu_nice
+		echo CPU IO wait : $cpu_io_wait
+		
 	fi
 }
 
