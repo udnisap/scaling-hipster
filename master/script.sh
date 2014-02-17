@@ -131,7 +131,7 @@ function status {
 		exit
 	else
 		response=$(curl -s $URI 2>&1);
-		#echo $response
+		echo $response
 	fi
 }
 
@@ -167,6 +167,9 @@ else
   else 
    if [ "$1" = "create" ]; then
         create $2 $3
+    fi
+   if [ "$1" = "status" ]; then
+        status $2 $3
     fi
   fi
  fi
