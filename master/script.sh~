@@ -1,5 +1,5 @@
 #!/bin/bash
-
+<<<<<<< HEAD
 OPTIONS="Deploy Run"
 openShiftGitRepo="git://github.com/rumal/scaling-hipster-client.git"
 herokuGitRepo="git://github.com/rumal/scaling-hipster-client.git"
@@ -8,7 +8,7 @@ openShiftNewAppURL=""
 OpenShiftNewAppGitRepo=""
 herokuNewAppURL=""
 herokuNewGitRepo=""
-
+=======
 source config.cfg
 
 declare -A NODE_LIST
@@ -65,7 +65,7 @@ function select_node {
 	echo ${NODE_LIST[$id]}
 	
 }
-
+>>>>>>> a4df1d470797b3f433a54c614bd618dea992b044
 
 # run (uri, parameters) 
 function run {
