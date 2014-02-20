@@ -161,15 +161,18 @@ function readusername {
 }
 
 
-
-
-
 function deploy {
 	file_name=$1
-	URL=$2"?method=deploy"
+	if [ -z "$2" ]; then
+		local URL=$(select_node)"?method=deploy"
+		echo $URL
+	else
+		local URL=$2"?method=deploy"
+	fi
+
 	echo "deploy script"
 	#curl -T $file_name $URL	
-	curl -F file=@$file_name $URL	
+	curl -F file=@$file_name $URL
 }
 
 #status URI index
@@ -220,7 +223,7 @@ function status {
 		cpu_io_wait=${cpu_final[4]}
 		
 		if [ -z "$index" ]; then 
-			echo No index provided
+			echo $response
 		else
 			#add memory details to the global variables
 			TOTAL_MEM[$index]=$mem_total
