@@ -165,10 +165,11 @@ function readusername {
 
 
 function deploy {
-	file_name =$1
-	URL = $2"?method=deploy"
+	file_name=$1
+	URL=$2"?method=deploy"
 	echo "deploy script"
-	curl -T $file_name $URL	
+	#curl -T $file_name $URL	
+	curl -F file=@$file_name $URL	
 }
 
 #status URI index
@@ -273,6 +274,9 @@ else
   if [ "$1" = "delete" ]; then
 	delete $2 $3
   else 
+   if [ "$1" = "deploy" ]; then
+        deploy $2 $3
+    fi
    if [ "$1" = "create" ]; then
         create $2 $3
     fi
