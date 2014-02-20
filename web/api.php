@@ -40,7 +40,25 @@ try {
                 $ret['results'] = exec("../master/script.sh deploy {$_FILES['file']['tmp_name']} $instance");
                 break;
             case "createInstance":
+		$typed = isset($_REQUEST['typed']) ? $_REQUEST['typed'] : "";
+		$name = isset($_REQUEST['name']) ? $_REQUEST['name'] : "";
+                if (!$typed){
+                    throw new Exception("type not found", 406);
+		}elseif (!$name) {
+  		   throw new Exception("name not found", 406);
+		} 
+                $ret['results'] = exec("../master/script.sh create $typed $name");
+                break;
 
+		case "delete":
+		$delapptype = isset($_REQUEST['delapptype']) ? $_REQUEST['delapptype'] : "";
+		$delapp = isset($_REQUEST['delapp']) ? $_REQUEST['delapp'] : "";
+                if (!$delapptype){
+                    throw new Exception("app type not found", 406);
+		}elseif (!$delapp) {
+  		   throw new Exception("app not found", 406);
+		} 
+                $ret['results'] = exec("../master/script.sh delete $delapptype $delapp");
                 break;
             default:
                 throw new Exception("Method not allowed $method", 405);
