@@ -1,8 +1,8 @@
 #!/bin/bash
 OPTIONS="Deploy Run"
-openShiftGitRepo="git://github.com/isururanawaka/Openshift.git"
-herokuGitRepo="git://github.com/heroku/ruby-sample.git"
-herokuAppFolder="ruby-sample"
+openShiftGitRepo="git://github.com/rumal/scaling-hipster-client.git"
+herokuGitRepo="git://github.com/rumal/scaling-hipster-client.git"
+herokuAppFolder="scaling-hipster-client"
 openShiftNewAppURL=""
 OpenShiftNewAppGitRepo=""
 herokuNewAppURL=""
@@ -33,12 +33,12 @@ function create {
 		echo please give application name
         
         elif [ "$typed" = "openshift" ]; then
-                 rhc setup
+                 rhc setup <rhcsetup
 		 rhc app create -a $name -t php-5.3 
                  cd $name
-                 git remote add upstream -m master $openShiftGitRepo
-                 git pull -s recursive -X theirs upstream master
-                 git push
+                 git remote add upstream  $openShiftGitRepo
+                 git pull upstream
+		 git push -f origin upstream/openshift:master
                  cd ..
                  response=$(rhc app-show $name)
                  javac AppInfoParser.java
@@ -46,12 +46,14 @@ function create {
                  OpenShiftNewAppGitRepo=$(java AppInfoParser "$response" openshift gitrepo)
                  echo URL of App: $openShiftNewAppURL
                  echo Git Repo :$OpenShiftNewAppGitRepo
+                 
         elif [ "$typed" = "heroku" ]; then
- 
-                 git clone $herokuGitRepo
-                 cd $herokuAppFolder
-                 heroku create $name
-                 git push heroku master 
+
+                 git clone $herokuGitRepo 
+                 cd $herokuAppFolder  
+		 git checkout heroku
+		 heroku create $name	
+                 # git push -f origin heroku:master
                  responseheroku=$(heroku apps:info)
                  cd ..
                  javac AppInfoParser.java
@@ -59,7 +61,13 @@ function create {
                  herokuNewGitRepo=$(java AppInfoParser "$responseheroku" heroku gitrepo)
                  echo URL of App: $herokuNewAppURL
                  echo Git Repo :$herokuNewGitRepo
-                # heroku open
+                 cd $herokuAppFolder  
+                 # git clone $herokuGitRepo
+                 # git remote add hrstream  $herokuNewGitRepo
+                 git push  heroku HEAD:master 
+                 cd ..
+                 rm -rf $herokuAppFolder  
+                 # heroku open
        
         else
             echo cannot create  
@@ -86,13 +94,13 @@ function delete {
      elif [ -z "$delapp" ]; then
                 echo please give app name
      elif [ "$delapptype" = "openshift" ]; then
-          
-          rhc app delete $delapp
+          rhc app delete $delapp <rhcreate
+          rhc logout
           rm -rf $delapp
           echo successfully deleted $delapp
       elif [ "$delapptype" = "heroku" ]; then
           
-          heroku apps:delete $delapp --confirm $delapp
+          heroku apps:delete $delapp --confirm $delapp 
           rm -rf $herokuAppFolder
           echo successfully deleted $delapp
      else
