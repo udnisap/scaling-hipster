@@ -1,4 +1,5 @@
 <?php
+
 include 'config.php';
 
 $ret = array();
@@ -17,8 +18,19 @@ try {
                 $instance->import($_REQUEST['data']);
                 R::store($instance);
                 break;
+            case "deployToInstance":
+                $instance = isset($_REQUEST['instance']) ? $_REQUEST['instance'] : "";
+                if (!$instance)
+                    throw new Exception("Instance not found", 406);
+            case "deploy":
+                $instance  = isset($instance)? $instance : "";
+                if ($_FILES["file"]["error"] > 0) {
+                    throw new Exception("Error uploading the file", 400);
+                }
+                $ret['results'] = exec("../scripts.sh deploy {$_FILES['file']['tmp_name']} $instance");
+                break;
             case "createInstance":
-                
+
                 break;
             default:
                 throw new Exception("Method not allowed $method", 405);
@@ -33,6 +45,5 @@ try {
 header('X-PHP-Response-Code:', true, $ret['status']['code']);
 //http_response_code($ret['status']['code']);
 echo json_encode($ret);
-
 ?>
 
