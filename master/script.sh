@@ -1,6 +1,61 @@
 #!/bin/bash
 source config.cfg
 
+declare -A NODE_LIST
+declare -A TOTAL_MEM
+declare -A USED_MEME
+declare -A FREE_MEM
+
+declare -A USER_CPU
+declare -A SYSTEM_CPU
+
+declare -A SCORE
+
+declare mem_multiplyer=1
+declare cpu_multiplyer=1000
+
+#update the server details
+function update {
+	#get the server list
+	i=0
+	while read line
+	do
+		NODE_LIST[$i]=$line
+		((i++))
+	done <servers.list
+	
+	j=0
+	for node in "${NODE_LIST[@]}"
+	do
+		#echo $node
+		status $node $j
+		((j++))
+	done
+}
+
+function select_node {
+	update		#get the updates of servers
+	
+	id=0
+	max_score=0
+	
+	for (( i = 0; i < ${#NODE_LIST[@]}; i++ ));
+	do
+		score_mem=$((${FREE_MEM[$i]} * $mem_multiplyer))
+		score_cpu=$(((100 - ${SYSTEM_CPU[$i]}) * $cpu_multiplyer))
+		
+		SCORE[$i]=$(($score_mem + $score_cpu))
+		
+		if [ ${SCORE[$i]} -gt $max_score ] ; then
+			max_score=${SCORE[$i]}
+			id=$i
+		fi
+	done
+	
+	echo ${NODE_LIST[$id]}
+	
+}
+
 # run (uri, parameters) 
 function run {
 	URI=$1"?method=run"
@@ -117,8 +172,11 @@ function deploy {
 	curl -F file=@$file_name $URL	
 }
 
-#status URI
+#status URI index
 function status {
+
+	index=$2
+
 	URI=$1"?method=status"
 	if [ -z "$URI" ]; then 
 		echo Enter host name
@@ -143,21 +201,17 @@ function status {
 		for (( i = 0; i < ${#mem_vals[@]}; i++ ));
 		do
 			IFS=' ' read -a temp <<< "${mem_vals[$i]}"
-			mem_final[$i]=${temp[0]}
+			mem_final[$i]=${temp[0]%?}
 		done
 		
 		mem_total=${mem_final[0]}
 		mem_used=${mem_final[1]}
 		mem_free=${mem_final[2]}
 		
-		echo Total memory : $mem_total
-		echo Memory used : $mem_used
-		echo Free memory : $mem_free
-		
 		for (( i = 0; i < ${#cpu_vals[@]}; i++ ));
 		do
-			IFS='%' read -a temp <<< "${cpu_vals[$i]}"
-			cpu_final[$i]=${temp[0]}
+			IFS=' ' read -a temp <<< "${cpu_vals[$i]}"
+			cpu_final[$i]=${temp[0]:0:-5}
 		done
 	
 		cpu_user=${cpu_final[0]}		
@@ -165,16 +219,33 @@ function status {
 		cpu_nice=${cpu_final[2]}
 		cpu_io_wait=${cpu_final[4]}
 		
-		echo CPU user : $cpu_user
-		echo CPU system : $cpu_system
-		echo CPU nice : $cpu_nice
-		echo CPU IO wait : $cpu_io_wait
+		if [ -z "$index" ]; then 
+			echo No index provided
+		else
+			#add memory details to the global variables
+			TOTAL_MEM[$index]=$mem_total
+			USED_MEME[$index]=$mem_used
+			FREE_MEM[$index]=$mem_free
+			#add cpu details to the global variables
+			USER_CPU[$index]=$cpu_user
+			SYSTEM_CPU[$index]=$cpu_system
+		fi
+		
+		#echo Total memory	: $mem_total
+		#echo Memory used	: $mem_used
+		#echo Free memory	: $mem_free
+		#echo CPU user		: $cpu_user
+		#echo CPU system		: $cpu_system
+		#echo CPU nice		: $cpu_nice
+		#echo CPU IO wait	: $cpu_io_wait
 		
 	fi
 }
 
 function init {
 	echo Welcome to Scaling-Hipster!
+		
+	#select option "Deploy" or "Run"
 	echo Select an option below
 	select opt in $OPTIONS; do
 	    if [ "$opt" = "Deploy" ]; then
@@ -211,6 +282,12 @@ else
     fi
    if [ "$1" = "status" ]; then
         status $2 $3
+    fi
+    if [ "$1" = "update" ]; then
+        update
+    fi
+    if [ "$1" = "select_node" ]; then
+        select_node
     fi
   fi
  fi
