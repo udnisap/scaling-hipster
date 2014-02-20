@@ -9,6 +9,11 @@ declare -A FREE_MEM
 declare -A USER_CPU
 declare -A SYSTEM_CPU
 
+declare -A SCORE
+
+declare mem_multiplyer=1
+declare cpu_multiplyer=1000
+
 #update the server details
 function update {
 	#get the server list
@@ -26,6 +31,29 @@ function update {
 		status $node $j
 		((j++))
 	done
+}
+
+function select_node {
+	update		#get the updates of servers
+	
+	id=0
+	max_score=0
+	
+	for (( i = 0; i < ${#NODE_LIST[@]}; i++ ));
+	do
+		score_mem=$((${FREE_MEM[$i]} * $mem_multiplyer))
+		score_cpu=$(((100 - ${SYSTEM_CPU[$i]}) * $cpu_multiplyer))
+		
+		SCORE[$i]=$(($score_mem + $score_cpu))
+		
+		if [ ${SCORE[$i]} -gt $max_score ] ; then
+			max_score=${SCORE[$i]}
+			id=$i
+		fi
+	done
+	
+	echo ${NODE_LIST[$id]}
+	
 }
 
 # run (uri, parameters) 
@@ -182,7 +210,7 @@ function status {
 		for (( i = 0; i < ${#cpu_vals[@]}; i++ ));
 		do
 			IFS=' ' read -a temp <<< "${cpu_vals[$i]}"
-			cpu_final[$i]=${temp[0]:0:-3}
+			cpu_final[$i]=${temp[0]:0:-5}
 		done
 	
 		cpu_user=${cpu_final[0]}		
@@ -202,13 +230,13 @@ function status {
 			SYSTEM_CPU[$index]=$cpu_system
 		fi
 		
-		echo Total memory	: $mem_total
-		echo Memory used	: $mem_used
-		echo Free memory	: $mem_free
-		echo CPU user		: $cpu_user
-		echo CPU system		: $cpu_system
-		echo CPU nice		: $cpu_nice
-		echo CPU IO wait	: $cpu_io_wait
+		#echo Total memory	: $mem_total
+		#echo Memory used	: $mem_used
+		#echo Free memory	: $mem_free
+		#echo CPU user		: $cpu_user
+		#echo CPU system		: $cpu_system
+		#echo CPU nice		: $cpu_nice
+		#echo CPU IO wait	: $cpu_io_wait
 		
 	fi
 }
@@ -253,6 +281,9 @@ else
     fi
     if [ "$1" = "update" ]; then
         update
+    fi
+    if [ "$1" = "select_node" ]; then
+        select_node
     fi
   fi
  fi
