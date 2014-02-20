@@ -13,21 +13,31 @@ try {
             case 'getInstances' :
                 $ret['results'] = R::findAndExport('instance');
                 break;
+            
             case 'addInstances':
                 $instance = R::dispense('instance');
                 $instance->import($_REQUEST['data']);
                 R::store($instance);
                 break;
+            
+            case "status":
+                $instance = isset($_REQUEST['instance']) ? $_REQUEST['instance'] : "";
+                if (!$instance)
+                    throw new Exception("Instance not found", 406);
+                $ret['results'] = exec("../master/script.sh status $instance");
+                break;
+
             case "deployToInstance":
                 $instance = isset($_REQUEST['instance']) ? $_REQUEST['instance'] : "";
                 if (!$instance)
                     throw new Exception("Instance not found", 406);
+                
             case "deploy":
                 $instance  = isset($instance)? $instance : "";
                 if ($_FILES["file"]["error"] > 0) {
                     throw new Exception("Error uploading the file", 400);
                 }
-                $ret['results'] = exec("../scripts.sh deploy {$_FILES['file']['tmp_name']} $instance");
+                $ret['results'] = exec("../master/script.sh deploy {$_FILES['file']['tmp_name']} $instance");
                 break;
             case "createInstance":
 

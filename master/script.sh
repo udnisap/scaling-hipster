@@ -241,7 +241,7 @@ function status {
 		#echo CPU system		: $cpu_system
 		#echo CPU nice		: $cpu_nice
 		#echo CPU IO wait	: $cpu_io_wait
-		
+		echo $response	
 	fi
 }
 
