@@ -58,8 +58,8 @@ function select_node {
 
 # run (uri, parameters) 
 function run {
-	URI=$1"?method=run"
-	params=$2
+	URI=$2"/scripts/"$1
+	params=$3
 	if [ -z "$params" ]; then 
 		echo Running $URI
 		curl $URI
@@ -269,7 +269,7 @@ fi
 
 
 if [ "$1" = "run" ]; then
-        run $2 $3
+        run $2 $3 $4
 else
   if [ "$1" = "delete" ]; then
 	delete $2 $3
